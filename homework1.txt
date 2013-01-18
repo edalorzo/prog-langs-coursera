@@ -1,0 +1,189 @@
+(* 
+	Programming Languages 
+	Assignment #1
+	Author: Edwin Dalorzo.
+*)
+
+(* Gets the year out of a date tuple. *)
+fun get_year(date: (int * int * int)) = #1 date
+
+(* Gets the month out of a date tuple. *)
+fun get_month(date: (int * int * int)) = #2 date
+
+(* Gets the day out of a date tuple. *)
+fun get_day(date: (int * int * int)) = #3 date
+
+(* #1. Evaluates to true if the first argument is a date that comes before the second argument. *)
+fun is_older(date1: (int * int * int), date2: (int * int * int)) = 
+	get_year(date1) < get_year(date2) 
+	orelse get_year(date1) = get_year(date2) andalso get_month(date1) < get_month(date2) 
+	orelse get_year(date1) = get_year(date2) andalso get_month(date1) = get_month(date2) andalso get_day(date1) < get_day(date2)
+
+(* #2. Takes a list of dates and a month and returns how many dates in the given list are in the given month. *)
+fun number_in_month(dates: (int * int * int) list, month: int) = 
+	if null dates then 0
+	else 
+		let 
+			val x = if get_month(hd dates) = month then 1 else 0
+		in 
+			x + number_in_month(tl dates, month)
+		end
+
+(* #3. Takes a list of dates and a list of months and returns the number of dates in the list of dates 
+	that are in any of the months in the list of months. *)
+fun number_in_months(dates: (int * int * int) list, months: int list)	= 
+	if null months 
+	then 0
+	else number_in_month(dates, hd months) + number_in_months(dates, tl months)
+
+(* #4. Takes a list of dates and a month and returns a list holding the dates from the argument list of dates
+	that are in the month. *)
+fun dates_in_month(dates: (int * int * int) list, month: int) =
+	if null dates then []
+	else 
+		let 
+			val current = hd dates
+		in 
+			if get_month(current) = month 
+			then current::dates_in_month(tl dates, month) 
+			else dates_in_month(tl dates, month)
+		end
+
+(* #5. Takes a list of dates and a list of months and returns a list holding the dates from the argument list of dates
+	that are in any of the months in the list of months. *)
+fun dates_in_months(dates: (int * int * int) list, months: int list) = 
+	if null months 
+	then []
+	else dates_in_month(dates, hd months) @ dates_in_months(dates, tl months)
+
+
+(* #6. Takes a list of strings and an int n, and returns the nth element of the list where
+	the head of the list is the 1st element. *)
+fun get_nth(xs: string list, n: int) = 
+	let
+		fun get_by_index(xs: string list, index: int) = 
+			if index = n then hd xs
+			else get_by_index(tl xs, index + 1)
+	in
+		get_by_index(xs, 1)
+	end
+
+(* #7. Takes a date an returns a string of the form January 20, 2013. *)
+fun date_to_string(date: (int * int * int)) =
+	let
+		val month_names = ["January","February","March","April","May","June",
+						   "July","August","September","October","November","December"]
+		val month_name = get_nth(month_names, get_month(date))
+	in
+		month_name ^ " " ^ Int.toString( get_day(date) ) ^ ", " ^ Int.toString( get_year(date) )
+	end
+
+(* #8. Takes a positive int called sum and an int list and returns an int n such that the
+	first n elements of the list add to less than the sum *)
+fun number_before_reaching_sum(sum: int, xs: int list) =
+	let 
+		fun fold(ys: int list, acc: int, pos: int) =
+			let 
+				val acc = acc + hd ys
+			in 
+				if acc < sum then fold(tl ys, acc, pos + 1) else pos
+			end
+	in
+		fold(xs, 0, 0)
+	end
+
+(* #9. Takes a day of the year and returns what month that day is in 
+	(1. for January, 2. for February). *)
+fun what_month(day: int) =
+	let
+		val months = [31,28,31,30,31,30,31,31,30,31,30,31]
+	in 
+		number_before_reaching_sum(day, months) + 1
+	end
+
+(* #10. Takes two days of the year day1 and day2 and returns an int list of the form
+	[m1,m2,...mn] where m1 is the month of day 1, m2 is the month of day1+1, and mn
+	is the month of day2. The lenght should be 0 if day2 > day1. *)
+fun month_range(day1: int, day2: int) =
+	let
+		fun upto(n: int) =
+			if n > day2 then []
+			else what_month(n) :: upto(n + 1)
+	in
+		if day1 <= day2 then upto(day1) else []
+	end
+
+(* #11. Takes a list of dates and evaluates to NONE if the list is empty or to
+	SOME d where d is the oldest date in the list. *)
+fun oldest(xs: (int * int * int) list) =
+	let 
+		fun fold(ys: (int * int * int) list, acc: (int * int * int)) =
+			if null ys then acc
+			else
+				let
+					val current = hd ys
+					val acc = if is_older(acc, current) then acc else current
+				in
+					fold(tl ys, acc)
+				end
+	in
+		if null xs then NONE else SOME (fold(tl xs, hd xs))
+	end
+
+(* Takes a list of integers and a value x and determines if x is within the list. *)
+fun elem(xs: int list, x: int) =
+	if null xs then false
+	else if hd xs = x then true 
+	else elem(tl xs, x)
+
+(* Removes duplicate elements from a list of integers. *)
+fun remove_duplicates(xs: int list) =
+	let 
+		fun fold(ys: int list, acc: int list) =
+			if null ys then acc
+			else 
+				let
+					val head = hd ys
+					val tail = tl ys
+				in
+					if elem(acc, head) then fold(tail, acc)
+					else fold(tail, acc @ [head])
+				end
+	in
+		fold(xs, [])
+	end
+
+
+(* #12a. Takes a list of dates and a list of months and returns the number of dates in the list of dates 
+	that are in any of the months in the list of months. *)
+fun number_in_months_challenge(dates: (int * int * int) list, months: int list)	= number_in_months(dates, remove_duplicates(months))
+
+(* #12b. Takes a list of dates and a list of months and returns a list holding the dates from the argument list of dates
+	that are in any of the months in the list of months. *)
+fun dates_in_months_challenge(dates: (int * int * int) list, months: int list) = dates_in_months(dates, remove_duplicates(months))
+
+(* 13. Takes a int and determines if it describes a valid date. *)
+fun reasonable_date(date: (int * int * int)) =
+	let
+		val month_days = [31,28,31,30,31,30,31,31,30,31,30,31]
+		val key_day = get_day(date)
+		val key_month = get_month(date)
+		val key_year = get_year(date)
+		fun is_valid_year() = key_year > 0
+		fun is_valid_month() = key_month >= 1 andalso key_month <= 12
+		fun is_leap_year() = key_year mod 400 = 0 orelse (key_year mod 100 <> 0 andalso key_year mod 4 = 0)
+		fun max_month_days()  = 
+			let
+				fun get_by_index(months: int list, index: int) = 
+					if index = key_month then 
+						if is_leap_year() andalso key_month = 2 
+							then (hd months) + 1
+							else (hd months)
+					else get_by_index(tl months, index + 1)
+				in
+					get_by_index(month_days, 1)
+				end
+		fun is_valid_day() = key_day > 0 andalso key_day <= max_month_days()
+	in
+		is_valid_year() andalso is_valid_month() andalso is_valid_day()
+	end
