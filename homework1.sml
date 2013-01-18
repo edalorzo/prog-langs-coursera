@@ -59,19 +59,10 @@ fun dates_in_months(dates: (int * int * int) list, months: int list) =
 
 (* #6. Takes a list of strings and an int n, and returns the nth element of the list where
 	the head of the list is the 1st element. *)
-(*
-fun get_nth(xs: string list, n: int) = 
-	let
-		fun get_by_index(xs: string list, index: int) = 
-			if index = n then hd xs
-			else get_by_index(tl xs, index + 1)
-	in
-		get_by_index(xs, 1)
-	end
-*)
 fun get_nth(xs: string list, n: int) = 
 	if n = 1 then hd xs
 	else get_nth(tl xs, n-1)
+	
 
 (* #7. Takes a date an returns a string of the form January 20, 2013. *)
 fun date_to_string(date: (int * int * int)) =
