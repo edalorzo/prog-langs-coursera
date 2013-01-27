@@ -7,6 +7,7 @@ fun same_string(s1 : string, s2 : string) =
     s1 = s2
 
 (* put your solutions for problem 1 here *)
+(* Author: Edwin Dalorzo *)
 
 (* 1a. Return NONE if the string is not in the list, else return SOME lst where lst is identical 
 to the argument list except the string is not in it. *)
@@ -41,6 +42,7 @@ fun get_substitutions2(subs: string list list, item: string) =
 	in
 		iterate(subs, [])
 	end
+
 (* 1d. The result is all the full names you can produce by substituting for the first name 
    (and only the first name) using substitutions. *)
 fun similar_names(subs: string list list, name:{first:string, middle:string, last:string}) = 
@@ -94,7 +96,7 @@ fun remove_card(cs: card list, c: card, e: exn) =
 
 fun all_same_color(cs: card list) = 
 	case cs of
-		  [] => false
+		  [] => true
 	 | _::[] => true
 	 | head::(neck::rest) => (card_color(head)=card_color(neck) andalso all_same_color(neck::rest))
 
@@ -109,17 +111,52 @@ fun sum_cards(cs: card list) =
 		sum(cs, 0)
 	end
 
+fun score(cs: card list, obj: int) =
+	let 
+		val sum = sum_cards(cs)
+		val prelim = if sum > obj then 3 * (sum-obj) else (obj-sum)
+		val score = if all_same_color(cs) then prelim div 2 else prelim
+	in
+		score
+	end
 
-val test1 = all_except_option("orange",["apple","grape","orange","lemon"]) = SOME ["lemon","grape", "apple"]
-val test2 = all_except_option("tangerine",["apple","grape","orange","lemon"]) = NONE
-val test3 = get_substitutions1( [["Fred","Frederick"], ["Elizabeth","Betty"], ["Freddie","Fred","F"]], "Fred") = ["Frederick","F","Freddie"]
-val test4 = get_substitutions1([["Fred","Frederick"],["Jeff","Jeffrey"],["Geoff","Jeff","Jeffrey"]], "Jeff") = ["Jeffrey","Jeffrey","Geoff"]
-val test5 = get_substitutions2( [["Fred","Frederick"], ["Elizabeth","Betty"], ["Freddie","Fred","F"]], "Fred") = ["F","Freddie","Frederick"]
-val test6 = get_substitutions2([["Fred","Frederick"],["Jeff","Jeffrey"],["Geoff","Jeff","Jeffrey"]], "Jeff") = ["Jeffrey","Geoff","Jeffrey"]
-val test7 = card_color (Clubs, Ace) = Black
-val test8 = card_color (Spades, Num 10) = Black
-val test9 = card_color (Diamonds, King) = Red
-val test10 = card_color (Hearts, Queen) = Red
-val test11 = card_value (Hearts,Num 5) = 5
-val test12 = card_value (Clubs, Ace) = 11
-val test13 = card_value (Diamonds, Jack) = 10
+fun officiate(cs: card list, ms: move list, obj: int) = 
+	let
+		fun draw(cards: card list, held: card list) = 
+			case cards of
+				[] => raise IllegalMove
+			  | (c::cs) => (cs, c::held)
+	    
+	    (* a function synonym to help reason in terms of the the requirements. *)
+		fun discard(held: card list, c: card) = remove_card(held, c, IllegalMove)
+
+		fun apply(m: move, cards: card list, held: card list) = 
+			case m of
+				Draw => draw(cards, held)
+			  | Discard c => (cards, discard(held, c))
+
+		fun iterate(cards: card list, moves: move list, held: card list) = 
+			case moves of
+				[] => 0
+			  | (m::ms) => let
+			  				  val (cs, hs)  = apply(m, cards, held)
+			  				  val score = score(hs, obj)
+			  				in
+			  					if cs=[] orelse score > obj then score
+			  					else iterate(cs, ms, hs)
+			  				end
+	in
+		iterate(cs, ms, [])
+	end
+
+fun score_challenge(cs: card list, obj: int) =
+	let
+		fun replace_as(cs: card list) =
+			case cs of
+				[] => []
+			  |	(c::cs) => (case c of 
+				 			(suit,Ace) => (suit, Num 1)
+				 		  | _ => c)::replace_as(cs)
+	in
+		Int.min(score(cs, obj), score(replace_as(cs), obj))
+	end
