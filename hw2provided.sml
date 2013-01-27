@@ -70,6 +70,8 @@ exception IllegalMove
 
 (* put your solutions for problem 2 here *)
 
+(* 2a. Takes a card and returns its color (spades and clubs are black,
+   diamonds and hearts are red). *)
 fun card_color(c) = 
 	case c of
 		(Clubs, _) => Black
@@ -77,13 +79,15 @@ fun card_color(c) =
 	  | (Diamonds,_) => Red
 	  | (Hearts,_) => Red
 
-
+(* 2b. Takes a card and returns its value (numbered cards have their
+   number as the value, aces are 11, everything else is 10). *)
 fun card_value(c) = 
 	case c of
 		(_,Num n) => n
 	  | (_,Ace) => 11
 	  | _ => 10
 
+(* 2c. It returns a list that has all the elements of cs except c. *)
 fun remove_card(cs: card list, c: card, e: exn) = 
 	let 
 		fun remove(source: card list, dest: card list) = 
@@ -94,13 +98,14 @@ fun remove_card(cs: card list, c: card, e: exn) =
 		remove(cs, [])
 	end
 
+(* 2d. Returns true if all the cards in the list are the same color. *)
 fun all_same_color(cs: card list) = 
 	case cs of
 		  [] => true
 	 | _::[] => true
 	 | head::(neck::rest) => (card_color(head)=card_color(neck) andalso all_same_color(neck::rest))
 
-
+(* 2e. Takes a list of cards and returns the sum of their values. *)
 fun sum_cards(cs: card list) = 
 	let
 		fun sum(cards: card list, acc: int) = 
@@ -111,6 +116,7 @@ fun sum_cards(cs: card list) =
 		sum(cs, 0)
 	end
 
+(* 2f. Computes the score of a list of cards held by the player. *)
 fun score(cs: card list, obj: int) =
 	let 
 		val sum = sum_cards(cs)
@@ -120,6 +126,7 @@ fun score(cs: card list, obj: int) =
 		score
 	end
 
+(* 2g. Runs the game. *)
 fun officiate(cs: card list, ms: move list, obj: int) = 
 	let
 		fun draw(cards: card list, held: card list) = 
@@ -127,7 +134,7 @@ fun officiate(cs: card list, ms: move list, obj: int) =
 				[] => raise IllegalMove
 			  | (c::cs) => (cs, c::held)
 	    
-	    (* a function synonym to help reason in terms of the the requirements. *)
+	    (* a function synonym to help me reason in problem domain terms. *)
 		fun discard(held: card list, c: card) = remove_card(held, c, IllegalMove)
 
 		fun apply(m: move, cards: card list, held: card list) = 
@@ -149,6 +156,7 @@ fun officiate(cs: card list, ms: move list, obj: int) =
 		iterate(cs, ms, [])
 	end
 
+(* 3a. Same as score but Aces can be worth 1 or 11. The minumum score is chosen. *)
 fun score_challenge(cs: card list, obj: int) =
 	let
 		fun replace_as(cs: card list) =
