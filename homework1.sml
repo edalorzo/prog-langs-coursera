@@ -28,6 +28,7 @@ fun number_in_month(dates: (int * int * int) list, month: int) =
 		in 
 			x + number_in_month(tl dates, month)
 		end
+		
 
 (* #3. Takes a list of dates and a list of months and returns the number of dates in the list of dates 
 	that are in any of the months in the list of months. *)
@@ -183,3 +184,44 @@ fun reasonable_date(date: (int * int * int)) =
 	in
 		is_valid_year() andalso is_valid_month() andalso is_valid_day()
 	end
+
+(*
+Puedes usar la función print string.
+La función es un poco truculenta de usar, porque retorna unit. 
+Y además, tienes que pasarle un string como parametro. 
+Así que tendrás que convertir cualquier tipo a string antes de poder imprimirlo.
+Por ejemplo, considera esta función que calcula la suma de los número de una lista.
+*)
+
+fun sum(xs: int list) =
+	if null xs then 0
+	else 
+		let
+			val current = hd xs
+		in
+			current + sum(tl xs)
+		end
+(* Se puede cambiar el código de esta manera y así, en cada iteración imprime el valor de la cabeza de la lista *)
+
+fun sum(xs: int list) =
+	if null xs then 0
+	else 
+		let
+			val current = ((print (Int.toString(hd xs) ^ "\n")); hd xs)
+		in
+			current + sum(tl xs)
+		end		
+
+fun lookup(persons: string list, person: string) =
+	if null persons then NONE
+	else
+		let 
+			val current_person = (hd persons)
+		in
+			if String.isPrefix person current_person
+			then SOME current_person
+			else lookup(tl persons, person)
+		end
+
+
+
