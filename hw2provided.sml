@@ -134,8 +134,9 @@ fun officiate(cs: card list, ms: move list, obj: int) =
 		fun iterate(cards: card list, moves: move list, held: card list) = 
 			let
 				val score = score(held, obj)
+				val sum = sum_cards(held)
 			in
-				if score > obj 
+				if sum > obj 
 				then score
 				else
 					case moves of 
@@ -152,12 +153,12 @@ fun officiate(cs: card list, ms: move list, obj: int) =
 (* 3a1. Same as score but Aces can be worth 1 or 11. The minumum score is chosen. *)
 fun score_challenge(cs: card list, obj: int) =
 	let
+		(*Simply replace Aces with Num 1*)
 		fun replace_as(cs: card list) =
 			case cs of
 				[] => []
-			  |	(c::cs) => (case c of 
-				 			(suit,Ace) => (suit, Num 1)
-				 		  | _ => c)::replace_as(cs)
+			  | (suit,Ace)::cs' => (suit, Num 1)::replace_as(cs')
+			  | c::cs' => c::replace_as(cs)
 	in
 		Int.min(score(cs, obj), score(replace_as(cs), obj))
 	end
@@ -166,12 +167,12 @@ fun score_challenge(cs: card list, obj: int) =
 (* 3a2. Same as score but Aces can be worth 1 or 11. The minumum score is chosen. *)
 fun officiate_challenge(cs: card list, ms: move list, obj: int) =
 	let
+	    (*I know, I should have created a common function.*)
 		fun replace_as(cs: card list) =
 			case cs of
 				[] => []
-			  |	(c::cs) => (case c of 
-				 			(suit,Ace) => (suit, Num 1)
-				 		  | _ => c)::replace_as(cs)
+			  | (suit,Ace)::cs' => (suit, Num 1)::replace_as(cs')
+			  | c::cs' => c::replace_as(cs)
 	in
 		officiate(replace_as(cs), ms, obj)
 	end
@@ -191,14 +192,14 @@ fun careful_player(cs: card list, obj: int) =
 			  				then SOME h 
 			  				else find_discard(c, hs, h::tested)
 
-		fun discard(cs: card list, held: card list, ms:move list) = 
+		fun try_discard(cs: card list, held: card list, ms:move list) = 
 			case cs of
 				[] => ms
 			  | (c::cs') => case find_discard(c, held, []) of
 			  					NONE => ms
 			  				  | SOME h => ms @ [(Discard h), Draw]
 
-		fun run(cs: card list, held: card list, ms: move list) = 
+		fun get_moves(cs: card list, held: card list, ms: move list) = 
 			let
 				val sum = sum_cards(held)
 			in
@@ -208,10 +209,10 @@ fun careful_player(cs: card list, obj: int) =
 						val (cs', held', ms') = draw(cs, held, ms)
 						val score = score(held', obj)
 					in
-						if score=0 then ms' else run(cs', held', ms')
+						if score=0 then ms' else get_moves(cs', held', ms')
 					end
-				else discard(cs, held, ms)
+				else try_discard(cs, held, ms)
 			end
 	in
-		run(cs, [], [])
+		get_moves(cs, [], [])
 	end
