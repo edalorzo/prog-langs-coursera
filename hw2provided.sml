@@ -140,11 +140,10 @@ fun officiate(cs: card list, ms: move list, obj: int) =
 				else
 					case moves of 
 						[] => score
-					  | (m::ms) => case m of 
-					  				Discard c => iterate(cards, ms, discard(c, held))
-					  			  | Draw => case cards of
-					  						 [] => score
-					  					   | (c::cs) => iterate(cs,ms,c::held)
+					  | (Discard c::ms) => iterate(cards, ms, discard(c, held))
+					  | (Draw::ms) => case cards of
+					  					 [] => score
+					  				   | (c::cs) => iterate(cs,ms,c::held)
 			end
 	in
 		iterate(cs, ms, [])
