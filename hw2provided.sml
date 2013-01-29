@@ -93,7 +93,7 @@ fun remove_card(cs: card list, c: card, e: exn) =
 		fun remove(source: card list, dest: card list) = 
 			case source of
 				[] => raise e
-			  |	(x::xs) => if x=c then dest @ xs else remove(xs, x::dest)
+			  |	(x::xs) => if x=c then dest @ xs else remove(xs, dest @ [x])
 	in
 		remove(cs, [])
 	end
@@ -129,34 +129,28 @@ fun score(cs: card list, obj: int) =
 (* 2g. Runs the game. *)
 fun officiate(cs: card list, ms: move list, obj: int) = 
 	let
-		fun draw(cards: card list, held: card list) = 
-			case cards of
-				[] => raise IllegalMove
-			  | (c::cs) => (cs, c::held)
-	    
-	    (* a function synonym to help me reason in problem domain terms. *)
-		fun discard(held: card list, c: card) = remove_card(held, c, IllegalMove)
-
-		fun apply(m: move, cards: card list, held: card list) = 
-			case m of
-				Draw => draw(cards, held)
-			  | Discard c => (cards, discard(held, c))
+		fun discard(c: card, held: card list) = remove_card(held, c, IllegalMove)
 
 		fun iterate(cards: card list, moves: move list, held: card list) = 
-			case moves of
-				[] => 0
-			  | (m::ms) => let
-			  				  val (cs, hs)  = apply(m, cards, held)
-			  				  val score = score(hs, obj)
-			  				in
-			  					if cs=[] orelse score > obj then score
-			  					else iterate(cs, ms, hs)
-			  				end
+			let
+				val score = score(held, obj)
+			in
+				if score > obj 
+				then score
+				else
+					case moves of 
+						[] => score
+					  | (m::ms) => case m of 
+					  				Discard c => iterate(cards, ms, discard(c, held))
+					  			  | Draw => case cards of
+					  						 [] => score
+					  					   | (c::cs) => iterate(cs,ms,c::held)
+			end
 	in
 		iterate(cs, ms, [])
 	end
 
-(* 3a. Same as score but Aces can be worth 1 or 11. The minumum score is chosen. *)
+(* 3a1. Same as score but Aces can be worth 1 or 11. The minumum score is chosen. *)
 fun score_challenge(cs: card list, obj: int) =
 	let
 		fun replace_as(cs: card list) =
@@ -167,4 +161,58 @@ fun score_challenge(cs: card list, obj: int) =
 				 		  | _ => c)::replace_as(cs)
 	in
 		Int.min(score(cs, obj), score(replace_as(cs), obj))
+	end
+
+
+(* 3a2. Same as score but Aces can be worth 1 or 11. The minumum score is chosen. *)
+fun officiate_challenge(cs: card list, ms: move list, obj: int) =
+	let
+		fun replace_as(cs: card list) =
+			case cs of
+				[] => []
+			  |	(c::cs) => (case c of 
+				 			(suit,Ace) => (suit, Num 1)
+				 		  | _ => c)::replace_as(cs)
+	in
+		officiate(replace_as(cs), ms, obj)
+	end
+
+(* 3b. Creates an optimal move list. *)
+fun careful_player(cs: card list, obj: int) = 
+	let
+		fun draw(cs: card list, held: card list, ms: move list) =
+			case cs of
+				[] => (cs, held, ms)
+			  | (c::cs') => (cs',c::held, Draw::ms)
+
+		fun find_discard(c: card, held: card list, tested: card list) =
+			case held of
+				[] => NONE
+			  | (h::hs) => 	if score(c::(hs @ tested), obj) = 0 
+			  				then SOME h 
+			  				else find_discard(c, hs, h::tested)
+
+		fun discard(cs: card list, held: card list, ms:move list) = 
+			case cs of
+				[] => ms
+			  | (c::cs') => case find_discard(c, held, []) of
+			  					NONE => ms
+			  				  | SOME h => ms @ [(Discard h), Draw]
+
+		fun run(cs: card list, held: card list, ms: move list) = 
+			let
+				val sum = sum_cards(held)
+			in
+				if (obj-10) > sum 
+				then 
+					let
+						val (cs', held', ms') = draw(cs, held, ms)
+						val score = score(held', obj)
+					in
+						if score=0 then ms' else run(cs', held', ms')
+					end
+				else discard(cs, held, ms)
+			end
+	in
+		run(cs, [], [])
 	end
