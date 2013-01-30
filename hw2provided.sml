@@ -216,3 +216,13 @@ fun careful_player(cs: card list, obj: int) =
 	in
 		get_moves(cs, [], [])
 	end
+
+
+	fun get_substitutions3 (xs, y) =
+		case xs of
+			[] => []
+		   | x::xs' => let val aux = all_except_option (y,x)
+					   in case aux of
+						   NONE => get_substitutions1(xs',y)
+						 | SOME aux => aux @ get_substitutions1(xs',y)
+						end
