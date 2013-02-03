@@ -45,7 +45,7 @@ val longest_string4 = longest_string_helper (fn (x,y) => x >= y)
 val longest_capitalized = longest_string2 o only_capitals
 val rev_string = implode o rev o explode
 
-fun first_anwer f xs = 
+fun first_answer f xs = 
 	case List.filter isSome (map f xs) of
 	   (SOME x)::xs' => x
 	  | _ => raise NoAnswer
@@ -83,6 +83,24 @@ fun check_pat p =
 	in
 		repeated (get_vars p)
 	end
+
+fun match (value, pattern) = 
+	let
+		val r = all_answers (fn (p,v) => match (p,v))
+	in
+		case (pattern,value) of 
+			 	(Wildcard,_) => SOME []
+		   	  | (UnitP, Unit) => SOME []
+		      | (ConstP p, Const v) => if p=v then SOME [] else NONE
+		      | (Variable p, Const v) => SOME [(p,Const v)]
+		      | (ConstructorP (pn, p), Constructor (vn,v)) => if pn=vn then r [(v,p)] else NONE
+			  | (TupleP ps, Tuple vs) => r (ListPair.zip(vs,ps))
+			  | _ => NONE
+	end
+
+
+fun first_match (v, ps) = SOME (first_answer (fn p => match(v,p)) ps) handle NoAnswer => NONE
+
 
 val tests1 =  
 	[
@@ -154,10 +172,10 @@ val tests8 =
 
 val tests9 = 
 	[
-		((first_anwer (fn n => if n mod 2 = 0 then SOME n else NONE) []) handle NoAnswer => 0) = 0,
-		((first_anwer (fn n => if n mod 2 = 0 then SOME n else NONE) [3,5,7]) handle NoAnswer => 0) = 0,
-		((first_anwer (fn n => if n mod 2 = 0 then SOME n else NONE) [2]) handle NoAnswer => 0) = 2,
-		((first_anwer (fn n => if n mod 2 = 0 then SOME n else NONE) [2,4]) handle NoAnswer => 0) = 2
+		((first_answer (fn n => if n mod 2 = 0 then SOME n else NONE) []) handle NoAnswer => 0) = 0,
+		((first_answer (fn n => if n mod 2 = 0 then SOME n else NONE) [3,5,7]) handle NoAnswer => 0) = 0,
+		((first_answer (fn n => if n mod 2 = 0 then SOME n else NONE) [2]) handle NoAnswer => 0) = 2,
+		((first_answer (fn n => if n mod 2 = 0 then SOME n else NONE) [2,4]) handle NoAnswer => 0) = 2
 	]					
 
 (*Converts a string of numbers into a option list of numbers (i.e. "123" into SOME [1,2,3] and "123a" into NONE*)
@@ -168,7 +186,10 @@ val tests10 =
 		all_answers q8 ["123"] = SOME [1,2,3],
 		(*Notice that this test can fail to other depending on how they use the @ operator in the function*)
 		all_answers q8 ["123","456"] = SOME [4,5,6,1,2,3],
-		all_answers q8 ["123a"] = NONE
+		all_answers q8 ["123a"] = NONE,
+		(*these two are really weird cases*)
+		all_answers (fn x => SOME [x]) ([]: int list) = SOME [],
+		all_answers (fn x => NONE:int list option) ([]: int list) = SOME []
 	]						
 
 val tests11 = 
@@ -202,13 +223,47 @@ val tests13 =
 		count_some_vars("x", TupleP([ConstructorP("Test",TupleP([Variable "x", Variable "y", Variable "z"])), Variable "x"])) = 2
 	]
 
+val tests14 = 
+	[
+		match (Const 10, Wildcard) = SOME [],
+		match (Unit, Wildcard) = SOME [],
+		match (Constructor("Test", Unit), Wildcard) = SOME [],
+		match (Tuple [Unit, Const 10], Wildcard) = SOME [],
+		match (Unit, UnitP) = SOME [],
+		match (Const 10, ConstP 10) = SOME [],
+		match (Const 10, ConstP 20) = NONE,
+		match (Const 10, Variable "x") = SOME [("x",Const 10)],
+		match (Constructor("Test", Const 35), ConstructorP("Test", Variable "y")) = SOME [("y",Const 35)],
+		match (Constructor("Test", Const 35), ConstructorP("Fail", Variable "y")) = NONE,
+		match (
+				Tuple [Const 1, Const 2, Const 3, Const 4], 
+				TupleP [Variable "w",Variable "x", Variable "y", Variable "z"]
+			  ) = SOME [("z",Const 4),("y",Const 3),("x",Const 2),("w",Const 1)],
+		match (
+				Tuple [Const 1, Const 2, Const 3, Const 4], 
+				TupleP [ConstP 1,Variable "x", ConstP 3, Variable "z"]
+			  ) = SOME [("z",Const 4),("x",Const 2)],
+		match (
+				Constructor("A", Tuple([Unit, Const 10, Const 20, Tuple([Unit, Constructor("B", Const 30)])])), 
+				ConstructorP("A", TupleP([UnitP, Variable "x", ConstP 20, TupleP([UnitP, ConstructorP("B", Variable "y")])]))
+			  ) = SOME [("y", Const 30), ("x", Const 10)]
+	]
 
+val tests15 = 
+	[
+		first_match (Const 10, [ConstP 10, Variable "x"]) = SOME [],
+		first_match (Const 10, [Variable "x", Variable "y"]) = SOME [("x",Const 10)],
+		first_match (Const 10, [UnitP, ConstructorP("Test", ConstP 10), Wildcard, Variable "y", ConstP 10]) = SOME [],
+		first_match (Const 10, [UnitP, ConstructorP("Test", ConstP 10), Variable "y", Wildcard, ConstP 10]) = SOME [("y", Const 10)],
+		first_match (Const 10, [UnitP]) = NONE
+	]
+	
 val tests = tests1 @ tests2 @
 			tests3 @ tests4 @
 			tests5 @ tests6 @
 			tests7 @ tests8 @
 			tests9 @ tests10 @
 			tests11 @ tests12 @
-			tests13
+			tests13 @ tests14 @ tests15
 
 val all_tests = List.all (fn x => x) tests
