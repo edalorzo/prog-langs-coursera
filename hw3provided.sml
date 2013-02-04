@@ -105,11 +105,9 @@ fun match (value, pattern) =
 
 fun first_match (v, ps) = SOME (first_answer (fn p => match(v,p)) ps) handle NoAnswer => NONE
 
-(*
-datatype rango = Sota | Reina | Rey | As | Numero of int
-*)
 
 exception ConstructorNotFound of string * typ
+exception UnequalPatterns of typ * typ
 
 fun typecheck_patterns(types, patterns) = 
 	let
@@ -132,6 +130,24 @@ fun typecheck_patterns(types, patterns) =
 			  | TupleP(ps) => TupleT( map (fn p => to_type(p)) ps)
 			  | ConstructorP(cn, p) => find(cn, to_type(p))
 
+		
+		fun generalize(t1,t2) = 
+			case (t1,t2) of
+				(UnitT, UnitT) => UnitT
+			  | (IntT, IntT) => IntT
+			  | (TupleT(ts1), TupleT(ts2)) => TupleT(ListPair.map generalize (ts1,ts2))
+			  | (Datatype(s1), Datatype(s2)) => if s1=s2 then Datatype(s1) else raise UnequalPatterns(t1,t2)
+			  | (UnitT, Anything) => Anything
+			  | (IntT, Anything) => Anything
+			  | (TupleT(ts), Anything) => TupleT(ts)
+			  | (Datatype(s), Anything) => Datatype(s)
+			  | (Anything, Anything) => Anything
+			  | (Anything, UnitT) => Anything
+			  | (Anything, IntT) => Anything
+			  | (Anything, Datatype(s)) => Datatype(s)
+			  | (Anything, TupleT(ts)) => TupleT(ts)
+			  | _ => raise UnequalPatterns(t1,t2)
+			  
 		fun check(patterns, thetype) = 
 			case patterns of 
 				[] => SOME thetype
@@ -145,3 +161,11 @@ fun typecheck_patterns(types, patterns) =
 		check(tl patterns, to_type(hd patterns))
 	end
 
+
+datatype rango = Sota | Reina | Rey | As | Numero of int
+
+fun test(x) =
+	case x of
+		(Sota,x) => 0
+	  | (Rey, y) => 0
+	  | (Reina,_) => 0
