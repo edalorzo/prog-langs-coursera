@@ -109,23 +109,39 @@ fun first_match (v, ps) = SOME (first_answer (fn p => match(v,p)) ps) handle NoA
 datatype rango = Sota | Reina | Rey | As | Numero of int
 *)
 
+exception ConstructorNotFound of string * typ
+
 fun typecheck_patterns(types, patterns) = 
 	let
-		fun find t ts = 
+
+		fun find(name,argtype) = 
 			let
-				val (cons,_,_)  = t
+				val found = List.find (fn (c,t,a) => name = c andalso argtype = a) types
 			in
-				List.find (fn (name,_,_) => cons = name) ts
+				case found of
+					NONE => raise ConstructorNotFound(name, argtype)
+				  | SOME (c,t,a) => Datatype t 
 			end
-		
-		fun get_type_of t = 
-			let
-				val (cons,dtname,dtype) = t
-			in
-				
-			end
-		
+
+		fun to_type(pattern) =
+			case pattern of
+				Wildcard => Anything
+			  | UnitP => UnitT
+			  | ConstP(_) => IntT
+			  | Variable(_) => IntT
+			  | TupleP(ps) => TupleT( map (fn p => to_type(p)) ps)
+			  | ConstructorP(cn, p) => find(cn, to_type(p))
+
+		fun check(patterns, thetype) = 
+			case patterns of 
+				[] => SOME thetype
+			  | (p::ps) => let
+			  					val thistype = to_type(p)
+			  				in
+			  					if thistype = thetype then check(ps, thistype) else NONE
+			  				end
 	in
-		find types patterns
+		(*map (fn p => to_type(p)) patterns*)
+		check(tl patterns, to_type(hd patterns))
 	end
 
