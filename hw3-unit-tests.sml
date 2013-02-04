@@ -1,3 +1,4 @@
+
 val tests1 =  
 	[
 		only_capitals [] = [],
@@ -56,7 +57,7 @@ val tests7 =
 		longest_capitalized ["one"] = "",
 		longest_capitalized ["one","two"] = "",
 		longest_capitalized ["one","Two","three"] = "Two",
-		longest_capitalized ["one","two","Three","Fives"] = "Fives"
+		longest_capitalized ["one","two","Three","Fives"] = "Three"
 	]			
 
 val tests8 = 
@@ -112,11 +113,11 @@ val tests12 =
 
 val tests13 = 
 	[
-		count_some_vars("x", UnitP) = 0,
-		count_some_vars("x", Variable "x") = 1,
-		count_some_vars("x", ConstructorP("Test",Variable "x")) = 1,
-		count_some_vars("x", TupleP([Wildcard, UnitP, ConstP 10, Variable "y", Variable "x"])) = 1,
-		count_some_vars("x", TupleP([ConstructorP("Test",TupleP([Variable "x", Variable "y", Variable "z"])), Variable "x"])) = 2
+		count_some_var("x", UnitP) = 0,
+		count_some_var("x", Variable "x") = 1,
+		count_some_var("x", ConstructorP("Test",Variable "x")) = 1,
+		count_some_var("x", TupleP([Wildcard, UnitP, ConstP 10, Variable "y", Variable "x"])) = 1,
+		count_some_var("x", TupleP([ConstructorP("Test",TupleP([Variable "x", Variable "y", Variable "z"])), Variable "x"])) = 2
 	]
 
 val tests14 = 
@@ -131,6 +132,7 @@ val tests14 =
 		match (Const 10, Variable "x") = SOME [("x",Const 10)],
 		match (Constructor("Test", Const 35), ConstructorP("Test", Variable "y")) = SOME [("y",Const 35)],
 		match (Constructor("Test", Const 35), ConstructorP("Fail", Variable "y")) = NONE,
+		(*Tuples of unequal size should not match*)
 		match (Tuple([Const 1, Const 2]), TupleP([Variable "x", Variable "y", Variable "z"])) = NONE,
 		match (
 				Tuple [Const 1, Const 2, Const 3, Const 4], 

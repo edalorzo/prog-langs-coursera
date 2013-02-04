@@ -44,7 +44,7 @@ fun longest_string2 xs = foldl (fn (a,b) => if size a >= size b then a else b) "
 fun longest_string_helper f xs = foldl (fn (a,b) => if f(size a, size b) then a else b) "" xs
 val longest_string3 = longest_string_helper (fn (x,y) => x > y)
 val longest_string4 = longest_string_helper (fn (x,y) => x >= y)
-val longest_capitalized = longest_string2 o only_capitals
+val longest_capitalized = longest_string1 o only_capitals
 val rev_string = implode o rev o explode
 
 fun first_answer f xs = 
@@ -67,7 +67,7 @@ fun all_answers f xs =
 
 fun count_wildcards p = g (fn unit => 1) (fn s => 0) p
 fun count_wild_and_variable_lengths p = g (fn unit => 1) (fn s => size s) p
-fun count_some_vars (s,p) = g (fn unit => 0) (fn n => if n=s then 1 else 0) p
+fun count_some_var (s,p) = g (fn unit => 0) (fn n => if n=s then 1 else 0) p
 
 fun check_pat p = 
 	let
@@ -104,16 +104,28 @@ fun match (value, pattern) =
 
 
 fun first_match (v, ps) = SOME (first_answer (fn p => match(v,p)) ps) handle NoAnswer => NONE
+
 (*
+datatype rango = Sota | Reina | Rey | As | Numero of int
+*)
+
 fun typecheck_patterns(types, patterns) = 
 	let
-
-		fun check((consname, constype, argtype), patterns) = 
-			case patterns of
-				[] => []
-			   | (p::ps) => 
-			
-
+		fun find t ts = 
+			let
+				val (cons,_,_)  = t
+			in
+				List.find (fn (name,_,_) => cons = name) ts
+			end
+		
+		fun get_type_of t = 
+			let
+				val (cons,dtname,dtype) = t
+			in
+				
+			end
+		
 	in
+		find types patterns
 	end
-*)
+
