@@ -157,12 +157,53 @@ val tests15 =
 		first_match (Const 10, [UnitP]) = NONE
 	]
 
+val types = [
+				("Red","color",UnitT),
+				("Blue","color",UnitT),
+				("SUV","car",UnitT),
+				("Sedan","car",Datatype "color"),
+				("Truck","car", TupleT[Datatype "color", Datatype "color"]),
+				("Empty","list",UnitT),
+				("List","list", TupleT[Anything, Datatype "list"])
+			]
+val tests16 = 
+	[
+		typecheck_patterns(types, [Wildcard, Wildcard]) = SOME Anything,
+		typecheck_patterns(types, [Wildcard, Variable "x"]) = SOME Anything,
+		typecheck_patterns(types, [Wildcard, ConstP 10]) = SOME IntT,
+		typecheck_patterns(types, [Wildcard, UnitP]) = SOME Anything,
+		typecheck_patterns(types, [Wildcard, TupleP[Wildcard, Variable "x"]]) = SOME(TupleT[Anything, Anything]),
+		typecheck_patterns(types, [Wildcard, ConstructorP("Red",UnitP)]) = SOME(Datatype("color")),
+		typecheck_patterns(types, [Variable "x", Wildcard]) = SOME Anything,
+		typecheck_patterns(types, [Variable "x", ConstP 10]) = SOME IntT,
+		typecheck_patterns(types, [Variable "x", Variable "y"]) = SOME Anything,
+		typecheck_patterns(types, [ConstP 10, Wildcard]) = SOME IntT,
+		typecheck_patterns(types, [ConstP 10, Variable "x"]) = SOME IntT,
+		typecheck_patterns(types, [ConstP 10, ConstP 11]) = SOME IntT,
+		typecheck_patterns(types, [UnitP, Wildcard]) = SOME Anything,
+		typecheck_patterns(types, [TupleP[Variable "x", ConstP 10], Wildcard]) = SOME(TupleT[Anything, IntT]),
+		typecheck_patterns(types, [ConstructorP("Red",UnitP),ConstructorP("Blue",UnitP), Wildcard]) = SOME(Datatype("color")),
+		typecheck_patterns(types, [Variable "x", UnitP]) = NONE,
+		typecheck_patterns(types, [ConstructorP("Red",ConstP 10)]) = NONE,
+		typecheck_patterns(types, [ConstructorP("Red",ConstP 10)]) = NONE,
+		typecheck_patterns(types, [ConstructorP("Sedan",ConstructorP("Red",UnitP)),ConstructorP("Truck",TupleP[ConstructorP("Red",UnitP),ConstructorP("Blue",UnitP)])]) = SOME(Datatype "car"),
+		typecheck_patterns(types, [TupleP[ConstructorP("Sedan",ConstructorP("Red",UnitP)), ConstP 10], TupleP [ConstructorP("Truck", TupleP[ ConstructorP("Red",UnitP), ConstructorP("Blue",UnitP) ] ),Variable "x"]]) = SOME(TupleT[Datatype "car",IntT]),
+		typecheck_patterns(types, [TupleP[Variable "x", Variable "x"],TupleP[Wildcard, Wildcard]]) = SOME(TupleT[Anything, Anything]),
+		typecheck_patterns(types, [TupleP[Wildcard, Wildcard],TupleP[Wildcard, TupleP[Wildcard, Wildcard]]]) = SOME(TupleT[Anything, TupleT[Anything,Anything]]),
+		typecheck_patterns(types, [Variable "x", ConstructorP("Red",UnitP)]) = SOME(Datatype "color"),
+		typecheck_patterns(types, [Wildcard, ConstructorP("SUV",UnitP), ConstructorP("Truck", TupleP([ConstructorP("Red",UnitP), ConstructorP("Blue",UnitP)]))]) = SOME(Datatype "car"),
+		typecheck_patterns(types, [ConstructorP("Empty",UnitP), ConstructorP("List",TupleP[Variable "x", ConstructorP("Empty",UnitP)])]) = SOME(Datatype "list"),
+		typecheck_patterns(types, [Wildcard, ConstructorP("Empty",UnitP), ConstructorP("List",TupleP[Variable "x", ConstructorP("Empty",UnitP)])]) = SOME(Datatype "list"),
+		typecheck_patterns(types, [ConstructorP("Empty",UnitP), ConstructorP("List",TupleP[ConstP 10, ConstructorP("Empty",UnitP)])]) = SOME(Datatype "list")
+	]
+	
 val tests = tests1 @ tests2 @
 			tests3 @ tests4 @
 			tests5 @ tests6 @
 			tests7 @ tests8 @
 			tests9 @ tests10 @
 			tests11 @ tests12 @
-			tests13 @ tests14 @ tests15
+			tests13 @ tests14 @ 
+			tests15 @ tests16 
 
 val all_tests = List.all (fn x => x) tests

@@ -105,7 +105,6 @@ fun match (value, pattern) =
 
 fun first_match (v, ps) = SOME (first_answer (fn p => match(v,p)) ps) handle NoAnswer => NONE
 
-
 exception ConstructorNotFound of string * typ
 exception IncompatiblePatterns of pattern * pattern
 
@@ -114,7 +113,8 @@ fun typecheck_patterns(types, patterns) =
 
 		fun find(name,argtype) = 
 			let
-				val found = List.find (fn (c,t,a) => name = c andalso argtype = a) types
+				(*TODO: not only if types are equal, but if they are compatible*)
+				val found = List.find (fn (c,t,a) => name = c andalso (argtype = a)) types
 			in
 				case found of
 					NONE => raise ConstructorNotFound(name, argtype)
@@ -126,7 +126,7 @@ fun typecheck_patterns(types, patterns) =
 				Wildcard => Anything
 			  | UnitP => UnitT
 			  | ConstP(_) => IntT
-			  | Variable(_) => IntT
+			  | Variable(_) => Anything
 			  | TupleP(ps) => TupleT( map (fn p => to_type(p)) ps)
 			  | ConstructorP(cn, p) => find(cn, to_type(p))
 
@@ -141,63 +141,37 @@ fun typecheck_patterns(types, patterns) =
 			  | (Wildcard, TupleP(_)) => p2
 			  | (Variable(_), Variable(_)) => p1
 			  | (Variable(_), ConstP(_)) => p2
+			  | (Variable(_), TupleP(_)) => p2
+			  | (Variable(_), ConstructorP(_,_)) => p2
 			  | (Variable(_), Wildcard) => p2
 			  | (ConstP(_), ConstP(_)) => p1
 			  | (ConstP(_), Variable(_)) => p1
 			  | (ConstP(_), Wildcard) => p1
 			  | (UnitP, UnitP) => p1
 			  | (UnitP, Wildcard) => p2
+			  | (TupleP(_), Variable(_)) => p1
 			  | (TupleP(ps1), TupleP(ps2)) => if length(ps1) = length(ps2)  
 			  								  then TupleP(ListPair.map generalize (ps1,ps2))
 			  								  else raise IncompatiblePatterns(p1,p2)
 			  | (TupleP(_), Wildcard) => p1
+			  | (ConstructorP(_,_), Variable(_)) => p1
 			  | (ConstructorP(_,_), ConstructorP(_,_)) => if to_type(p1) = to_type(p2)
-			  													handle ConstructorNotFound(_,_) => false
 			  											  then p1
-			  											  else raise IncompatiblePatterns(p1,p2)
+			  											  else raise (print("\nIncompatible\n");IncompatiblePatterns(p1,p2))
 			  | (ConstructorP(_,_), Wildcard) => p1
-			  | _ => raise IncompatiblePatterns(p1,p2)
+			  | _ => (print("\nExhausted options\n");raise IncompatiblePatterns(p1,p2))
 				
 			  
 		fun check(patterns, prevpattern) = 
 			case patterns of 
-				[] => SOME(to_type(prevpattern))
+				[] => SOME(prevpattern)
 			  | (p::ps) => check(ps,generalize(p, prevpattern)) 
-			  				handle IncompatiblePatterns(_,_) => NONE
+			  				handle exn => NONE
 	in
 		case patterns of
-			[] => NONE
-		  | p::ps => check(ps,p)
+			[] => SOME Anything
+		  | p::ps => case check(ps,p) of
+		  				NONE => NONE
+		  			  | SOME p => SOME(to_type(p)) handle ConstructorNotFound(cn,p) => (print("\nPuff: " ^ cn ^ "\n");NONE)
+		  			                                      | exn => NONE
 	end
-
-
-datatype rango = Sota | Reina | Rey | As | Numero of int
-
-val types = [("Red","color",UnitT),("Blue","color",UnitT)]
-val tests16 = 
-	[
-		typecheck_patterns(types, [Wildcard, Wildcard]) = SOME Anything,
-		typecheck_patterns(types, [Wildcard, Variable "x"]) = SOME Anything,
-		typecheck_patterns(types, [Wildcard, ConstP 10]) = SOME IntT,
-		typecheck_patterns(types, [Wildcard, UnitP]) = SOME Anything,
-		typecheck_patterns(types, [Wildcard, TupleP[Wildcard, Variable "x"]]) = SOME(TupleT[Anything, IntT]),
-		typecheck_patterns(types, [Wildcard, ConstructorP("Red",UnitP)]) = SOME(Datatype("color")),
-		typecheck_patterns(types, [Variable "x", Wildcard]) = SOME Anything,
-		typecheck_patterns(types, [Variable "x", ConstP 10]) = SOME IntT,
-		typecheck_patterns(types, [Variable "x", Variable "y"]) = SOME IntT,
-		typecheck_patterns(types, [ConstP 10, Wildcard]) = SOME IntT,
-		typecheck_patterns(types, [ConstP 10, Variable "x"]) = SOME IntT,
-		typecheck_patterns(types, [ConstP 10, ConstP 11]) = SOME IntT,
-		typecheck_patterns(types, [UnitP, Wildcard]) = SOME Anything,
-		typecheck_patterns(types, [TupleP[Variable "x", ConstP 10], Wildcard]) = SOME(TupleT[IntT, IntT]),
-		typecheck_patterns(types, [ConstructorP("Red",UnitP),ConstructorP("Blue",UnitP), Wildcard]) = SOME(Datatype("color")),
-		typecheck_patterns(types, [Variable "x", UnitP]) = NONE
-		(*typecheck_patterns(types, [ConstructorP("Red",ConstP 10)]) = NONE*)
-
-
-	]
-
-val tests = tests16
-
-val all_tests = List.all (fn x => x) tests	
-
