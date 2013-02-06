@@ -163,8 +163,12 @@ val types = [
 				("SUV","car",UnitT),
 				("Sedan","car",Datatype "color"),
 				("Truck","car", TupleT[Datatype "color", Datatype "color"]),
+				(*polymorphic list*)
 				("Empty","list",UnitT),
-				("List","list", TupleT[Anything, Datatype "list"])
+				("List","list", TupleT[Anything, Datatype "list"]),
+				(*integer list*)
+				("Vacio","lista", UnitT),
+				("Lista","lista", TupleT[IntT,Datatype "lista"])
 			]
 val tests16 = 
 	[
@@ -194,9 +198,25 @@ val tests16 =
 		typecheck_patterns(types, [Wildcard, ConstructorP("SUV",UnitP), ConstructorP("Truck", TupleP([ConstructorP("Red",UnitP), ConstructorP("Blue",UnitP)]))]) = SOME(Datatype "car"),
 		typecheck_patterns(types, [ConstructorP("Empty",UnitP), ConstructorP("List",TupleP[Variable "x", ConstructorP("Empty",UnitP)])]) = SOME(Datatype "list"),
 		typecheck_patterns(types, [Wildcard, ConstructorP("Empty",UnitP), ConstructorP("List",TupleP[Variable "x", ConstructorP("Empty",UnitP)])]) = SOME(Datatype "list"),
-		typecheck_patterns(types, [ConstructorP("Empty",UnitP), ConstructorP("List",TupleP[ConstP 10, ConstructorP("Empty",UnitP)])]) = SOME(Datatype "list")
+		typecheck_patterns(types, [ConstructorP("Empty",UnitP), ConstructorP("List",TupleP[ConstP 10, ConstructorP("Empty",UnitP)])]) = SOME(Datatype "list"),
+		typecheck_patterns(types, [Wildcard, ConstructorP("Empty",UnitP), ConstructorP("List",TupleP[ConstP 10, ConstructorP("Empty",UnitP)])]) = SOME(Datatype "list"),
+		typecheck_patterns(types, [ConstructorP("Vacio",UnitP), ConstructorP("Lista",TupleP([Variable "x", ConstructorP("Vacio",UnitP)]))]) = SOME(Datatype "lista")
 	]
-	
+
+val tests17 = [
+	not(check_pat(TupleP[Variable "x", Variable "x"])),
+	check_pat(TupleP[Variable "x", ConstructorP("Wild",Wildcard)]),
+	not(check_pat(TupleP[TupleP [Variable "x", ConstructorP("Wild", Wildcard)],Variable "x"])),
+	check_pat(TupleP[TupleP[Variable "x",ConstructorP("Wild", Wildcard)], Wildcard]),
+	not(check_pat(TupleP[TupleP[TupleP[Variable "x", ConstructorP("Wild", Wildcard)],Wildcard],Variable "x"])),
+	check_pat(ConstructorP("Egg",ConstructorP("Egg", ConstP 4))),
+	check_pat(TupleP[ConstP 17, Wildcard, ConstP 4, ConstructorP("Egg", ConstP 4), ConstructorP("Egg", ConstructorP("Egg", ConstP 4))]),
+	check_pat(TupleP[Wildcard,Wildcard]),
+	check_pat(TupleP[ConstP 17,ConstP 4])
+]			
+
+
+
 val tests = tests1 @ tests2 @
 			tests3 @ tests4 @
 			tests5 @ tests6 @
@@ -204,6 +224,7 @@ val tests = tests1 @ tests2 @
 			tests9 @ tests10 @
 			tests11 @ tests12 @
 			tests13 @ tests14 @ 
-			tests15 @ tests16 
+			tests15 @ tests16 @ 
+			tests17
 
 val all_tests = List.all (fn x => x) tests

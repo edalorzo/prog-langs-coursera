@@ -83,7 +83,7 @@ fun check_pat p =
     			[] => false
     		  | (x::xs') => List.exists ( fn s => s = x ) xs' orelse repeated xs'
 	in
-		repeated (get_vars p)
+		not(repeated (get_vars p))
 	end
 
 fun match (value, pattern) = 
@@ -111,10 +111,20 @@ exception IncompatiblePatterns of pattern * pattern
 fun typecheck_patterns(types, patterns) = 
 	let
 
+		(*t2 type declared, t1 type of pattern*)
+		fun is_compatible(t1,t2) = 
+			case (t1,t2) of
+				(Anything,_) => true
+			  | (_, Anything) => true
+			  | (UnitT, UnitT) => true
+			  | (IntT, IntT) => true
+			  | (TupleT(ts1), TupleT(ts2)) => length(ts1) = length(ts2) andalso ListPair.all is_compatible (ts1,ts2)
+			  | (Datatype(s1), Datatype(s2)) => s1 = s2
+			  | _ => false
+
 		fun find(name,argtype) = 
 			let
-				(*TODO: not only if types are equal, but if they are compatible*)
-				val found = List.find (fn (c,t,a) => name = c andalso (argtype = a)) types
+				val found = List.find (fn (c,t,a) => name = c andalso is_compatible(a, argtype)) types
 			in
 				case found of
 					NONE => raise ConstructorNotFound(name, argtype)
