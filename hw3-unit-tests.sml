@@ -150,11 +150,13 @@ val tests14 =
 
 val tests15 = 
 	[
-		first_match (Const 10, [ConstP 10, Variable "x"]) = SOME [],
-		first_match (Const 10, [Variable "x", Variable "y"]) = SOME [("x",Const 10)],
-		first_match (Const 10, [UnitP, ConstructorP("Test", ConstP 10), Wildcard, Variable "y", ConstP 10]) = SOME [],
-		first_match (Const 10, [UnitP, ConstructorP("Test", ConstP 10), Variable "y", Wildcard, ConstP 10]) = SOME [("y", Const 10)],
-		first_match (Const 10, [UnitP]) = NONE
+		
+		first_match (Const(10)) [ConstP 10, Variable "x"] = SOME [],
+		first_match (Const(10)) [Variable "x", Variable "y"] = SOME [("x",Const 10)],
+		first_match (Const(10)) [UnitP, ConstructorP("Test", ConstP 10), Wildcard, Variable "y", ConstP 10] = SOME [],
+		first_match (Const(10)) [UnitP, ConstructorP("Test", ConstP 10), Variable "y", Wildcard, ConstP 10] = SOME [("y", Const 10)],
+		first_match (Const(10)) [UnitP] = NONE
+		
 	]
 
 val types = [

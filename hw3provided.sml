@@ -103,7 +103,7 @@ fun match (value, pattern) =
 	end
 
 
-fun first_match (v, ps) = SOME (first_answer (fn p => match(v,p)) ps) handle NoAnswer => NONE
+fun first_match v ps = SOME (first_answer (fn p => match(v,p)) ps) handle NoAnswer => NONE
 
 exception ConstructorNotFound of string * typ
 exception IncompatiblePatterns of pattern * pattern
