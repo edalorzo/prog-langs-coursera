@@ -47,22 +47,56 @@ val longest_string4 = longest_string_helper (fn (x,y) => x >= y)
 val longest_capitalized = longest_string1 o only_capitals
 val rev_string = implode o rev o explode
 
+(*
+--suboptimal solutions that apply f to all elements of xs
+--while we are only looking for the first SOME.
+
 fun first_answer f xs = 
 	case List.filter isSome (map f xs) of
 	   (SOME x)::xs' => x
 	  | _ => raise NoAnswer
 
+fun first_answer f xs = 
+	case List.mapPartial f xs of
+		 [] => raise NoAnswer
+	   | x::_ => x
+*)
+
+fun first_answer f xs = 
+	case xs of 
+		[] => raise NoAnswer
+	  | x::xs' => case f(x) of
+	  				 NONE => first_answer f xs'
+	  			   | SOME y => y
+
+(*
+--suboptimal solution that applies f to all xs elements
+--despite the fact that the appearance of NONE should make
+--the process finish immediatelly.
+
 fun all_answers f xs = 
 	let 
 		val opts = map f xs
-		fun assemble(pending, checked) = 
+		fun find(pending, checked) = 
 			case pending of
 			  [] => SOME checked
 			  | (NONE)::_ => NONE
-			  | (SOME p)::ps => assemble(ps, p @ checked)
+			  | (SOME p)::ps => find(ps, p @ checked)
 
 	in
-		assemble(opts, [])
+		find(opts, [])
+	end	  
+*)
+fun all_answers f xs = 
+	let 
+		fun find(pending, checked) = 
+			case pending of
+			   [] => SOME checked
+			 | x::xs => case f(x) of 
+			  			  NONE => NONE
+			  			| SOME ps => find(xs, ps @ checked)
+	in
+		find(xs, [])
 	end	  
 
 fun count_wildcards p = g (fn unit => 1) (fn s => 0) p
