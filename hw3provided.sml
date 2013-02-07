@@ -108,7 +108,7 @@ fun check_pat p =
 		fun get_vars p =
 			case p of
 	  		    Variable x        => [x]
-	  		  | TupleP ps         => List.foldl (fn (p,vs) => (get_vars p) @ vs) [] ps
+	  		  | TupleP ps         => foldl (fn (p,vs) => (get_vars p) @ vs) [] ps
 	  		  | ConstructorP(_,p) => get_vars p
 	  		  | _                 => []
 
