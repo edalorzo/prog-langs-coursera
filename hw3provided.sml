@@ -219,3 +219,14 @@ fun typecheck_patterns(types, patterns) =
 		  			  | SOME p => SOME(to_type(p)) handle ConstructorNotFound(cn,p) => (print("\nPuff: " ^ cn ^ "\n");NONE)
 		  			                                      | exn => NONE
 	end
+
+
+fun only_capitals'( wordList : string list ) = List.filter( fn wordList' => (Char.isUpper( String.sub( wordList', 0 ) )) ) wordList
+
+
+fun aux1 (pat, acc) =
+	case pat of 
+		Variable x => x::acc
+		| TupleP ps => List.foldl( fn (p,i) => aux1 (p, i))acc ps @acc
+		| ConstructorP(z,p) => aux1( p, acc)
+		| _ => []
