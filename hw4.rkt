@@ -106,4 +106,14 @@
         [from-list (lambda (v) (update-cache (assoc v xs)))])
     (lambda (v) (let([hit (from-cache v)])
                   (if hit hit (from-list v))))))
-    
+
+;-----------------------
+; Challenge Problem
+;-----------------------
+(define-syntax while-less
+  (syntax-rules (while-less do)
+    [(while-less e1 do e2)
+     (letrec ([x e1]
+              [y (lambda () e2)]
+              [iter (lambda () (if (< (y) x) (iter) #t))])
+       (iter))]))

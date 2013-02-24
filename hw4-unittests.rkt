@@ -89,10 +89,20 @@
 ;-----------------------
 ; Tests for problem #10
 ;-----------------------
-(check-expect (vector-assoc 0 (vector)) #f) 
-(check-expect (vector-assoc 7 (vector (cons 1 2) (cons 3 4) (cons 5 6))) #f) 
-(check-expect (vector-assoc 3 (vector (cons 1 2))) #f)
-(check-expect (vector-assoc 3 (vector (cons 3 2))) (cons 3 2))
-(check-expect (vector-assoc 3 (vector (cons 1 2) (cons 4 5) (cons 3 2))) (cons 3 2))
+(define vas1 (cached-assoc (list (cons 1 2)) 5))
+(check-expect (vas1 1) (cons 1 2))
+(check-expect (vas1 2) #f)
+(define vas2 (cached-assoc (list (cons 1 2) (cons 3 4) (cons 5 6) (cons 7 8) (cons 9 10)) 3))
+(check-expect (vas2 1) (cons 1 2))
+(check-expect (vas2 2) #f)
+(check-expect (vas2 3) (cons 3 4))
+(check-expect (vas2 4) #f)
+(check-expect (vas2 5) (cons 5 6))
+(check-expect (vas2 6) #f)
+(check-expect (vas2 7) (cons 7 8))
+(check-expect (vas2 8) #f)
+(check-expect (vas2 9) (cons 9 10))
+
+
 
 (test)
