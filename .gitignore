@@ -1,2 +1,4 @@
 *.sml~
+*.rkt~
 *.pdf
+/compiled
