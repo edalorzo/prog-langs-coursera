@@ -20,11 +20,21 @@
 ;; a closure is not in "source" programs; it is what functions evaluate to
 (struct closure (env fun) #:transparent) 
 
-;; Problem 1
+;-----------------------
+; Problem #1
+;-----------------------
+(define (racketlist->mupllist xs)
+  (if (null? xs)
+      (aunit)
+      (apair (car xs) (racketlist->mupllist (cdr xs)))))
 
-;; CHANGE (put your solutions here)
-
-;; Problem 2
+;-----------------------
+; Problem #2
+;-----------------------
+(define (mupllist->racketlist xs)
+  (if (aunit? xs)
+      null
+      (cons (apair-e1 xs) (mupllist->racketlist (apair-e2 xs)))))
 
 ;; lookup a variable in an environment
 ;; Do NOT change this function
@@ -87,3 +97,24 @@
 ;; Do NOT change this
 (define (eval-exp-c e)
   (eval-under-env-c (compute-free-vars e) null))
+
+
+(require "hw4.rkt") 
+(require test-engine/racket-tests)
+
+;-----------------------
+; Tests for problem #1
+;-----------------------
+(check-expect (racketlist->mupllist null) (aunit))
+(check-expect (racketlist->mupllist (list (var "x"))) (apair (var "x") (aunit)))
+(check-expect (racketlist->mupllist (list (var "x") (int 10))) (apair (var "x") (apair (int 10) (aunit))))
+
+;-----------------------
+; Tests for problem #2
+;-----------------------
+(check-expect (mupllist->racketlist (aunit)) null)
+(check-expect (mupllist->racketlist (apair (var "x") (aunit))) (list (var "x")))
+(check-expect (mupllist->racketlist (apair (var "x") (apair (int 10) (aunit)))) (list (var "x") (int 10)))
+
+
+(test)
