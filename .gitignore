@@ -1,4 +1,5 @@
 *.sml~
 *.rkt~
 *.pdf
+*.rkt#*
 /compiled
