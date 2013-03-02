@@ -30,6 +30,9 @@
                          (Const (* v1 v2)))]
         [#t (error "eval-exp expected an exp")]))
 
+(struct foo (bar baz quux) #:transparent)
+
+
                              
                              
         

@@ -1,6 +1,2 @@
-val marcelo="Pelotudo"
-
-fun sum(xs: int list) =
-	if nul xs then 0
-	else hd xs + sum(tl xs)
-;
+fun even n = if n=0 then true else odd(n-1)
+and odd n = if n=0 then false else even(n-1)
