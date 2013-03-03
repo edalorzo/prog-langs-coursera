@@ -75,18 +75,4 @@
 (check-expect (eval-exp (call (call mupl-mapAddN (int 10)) (apair (int 1) (apair (int 2) (apair (int 3) (aunit))))))
               (apair (int 11) (apair (int 12) (apair (int 13) (aunit)))))
 
-;-----------------------
-; Tests for challenge
-;-----------------------
-(check-expect (eval-exp-c (ifaunit (aunit) (int 10) (int 20))) (int 10))
-(check-expect (eval-exp-c (ifaunit (int 10) (int 20) (int 30))) (int 30))
-(check-expect (eval-exp-c (mlet* (list (cons "x" (int 10)) (cons "y" (int 20))) (add (var "x") (var "y")))) (int 30))
-(check-expect (eval-exp-c (mlet* (list (cons "f" (fun #f "n" (add (var "n") (int 1)))) (cons "x" (int 9))) (call (var "f") (var "x")))) (int 10))
-(check-expect (eval-exp-c (ifeq (int 10) (int 10) (int 5) (int 6))) (int 5))
-(check-expect (eval-exp-c (ifeq (int 10) (int 11) (int 5) (int 6))) (int 6))
-(check-expect (eval-exp-c (call (call mupl-map (fun #f "n" (add (var "n") (var "n")))) (apair (int 7) (apair (int 8) (apair (int 9) (aunit))))))
-              (apair (int 14) (apair (int 16) (apair (int 18) (aunit)))))
-(check-expect (eval-exp-c (call (call mupl-mapAddN (int 10)) (apair (int 1) (apair (int 2) (apair (int 3) (aunit))))))
-              (apair (int 11) (apair (int 12) (apair (int 13) (aunit)))))
-
 (test)
