@@ -59,3 +59,31 @@ in
 	then (print "eval_prog with shadowing 'a' in environment is working properly\n")
 	else (print "eval_prog with shadowing 'a' in environment is not working properly\n")
 end;
+
+
+val t0 = let
+			val Point(x,y) = preprocess_prog(LineSegment(1.0,1.0,1.0,1.0))
+		 in
+		 	real_close(x,1.0) andalso real_close(y,1.0)
+		 end
+
+val t1 = let
+	val LineSegment(t1x1,t1y1,t1x2,t1y2) = preprocess_prog(LineSegment(1.0,1.0,0.0,0.0))
+	val LineSegment(t2x1,t2y1,t2x2,t2y2) = preprocess_prog(LineSegment(1.0,1.0,1.0,0.0))
+	val LineSegment(t3x1,t3y1,t3x2,t3y2) = preprocess_prog(LineSegment(1.0,1.0,2.0,0.0))
+	val LineSegment(t4x1,t4y1,t4x2,t4y2) = preprocess_prog(LineSegment(1.0,1.0,2.0,1.0))
+	val LineSegment(t5x1,t5y1,t5x2,t5y2) = preprocess_prog(LineSegment(1.0,1.0,2.0,2.0))
+	val LineSegment(t6x1,t6y1,t6x2,t6y2) = preprocess_prog(LineSegment(1.0,1.0,1.0,2.0))
+	val LineSegment(t7x1,t7y1,t7x2,t7y2) = preprocess_prog(LineSegment(1.0,1.0,0.0,2.0))
+	val LineSegment(t8x1,t8y1,t8x2,t8y2) = preprocess_prog(LineSegment(1.0,1.0,0.0,1.0))
+	val t1 = real_close(t1x1,0.0) andalso real_close(t1y1,0.0) andalso real_close(t1x2,1.0) andalso real_close(t1y2, 1.0)
+	val t2 = real_close(t2x1,1.0) andalso real_close(t2y1,0.0) andalso real_close(t2x2,1.0) andalso real_close(t2y2, 1.0)
+	val t3 = real_close(t3x1,1.0) andalso real_close(t3y1,1.0) andalso real_close(t3x2,2.0) andalso real_close(t3y2, 0.0)
+	val t4 = real_close(t4x1,1.0) andalso real_close(t4y1,1.0) andalso real_close(t4x2,2.0) andalso real_close(t4y2, 1.0)
+	val t5 = real_close(t5x1,1.0) andalso real_close(t5y1,1.0) andalso real_close(t5x2,2.0) andalso real_close(t5y2, 2.0)
+	val t6 = real_close(t6x1,1.0) andalso real_close(t6y1,1.0) andalso real_close(t6x2,1.0) andalso real_close(t6y2, 2.0)
+	val t7 = real_close(t7x1,0.0) andalso real_close(t7y1,2.0) andalso real_close(t7x2,1.0) andalso real_close(t7y2, 1.0)
+	val t8 = real_close(t8x1,0.0) andalso real_close(t8y1,1.0) andalso real_close(t8x2,1.0) andalso real_close(t8y2, 1.0)
+in
+	[t1,t2,t3,t4,t5,t6,t7,t8]
+end
