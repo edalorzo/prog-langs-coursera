@@ -1,3 +1,5 @@
+(* Unit Testing *)
+
 val tests01 = [
 	is_older( (1978,1,19), (1978,1,20)) = true,
 	is_older( (1978,1,19), (1978,2,19)) = true,
@@ -42,7 +44,9 @@ val tests07 = [
 
 val tests08 = [
 	number_before_reaching_sum(15, [1,2,3,4,5,6,7,8,9,10]) = 4,
-	number_before_reaching_sum(15, [31,28,30]) = 0
+	number_before_reaching_sum(22, [1,2,3,4,5,6,7,8,9,10]) = 6,
+	number_before_reaching_sum(15, [31,28,30]) = 0,
+	number_before_reaching_sum(22, [2,8,1,7,3,9,4,5]) = 5
 ]
 
 val tests09 = [
@@ -99,3 +103,5 @@ val tests = tests01 @ tests02 @
 			tests13 @ tests14
 
 val all_tests = List.all (fn x => x) tests
+
+
