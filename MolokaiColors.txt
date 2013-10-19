@@ -1,0 +1,6 @@
+1b1d1e background
+ae81ff function/keywords
+f92672 control flow
+a6c527 identifiers
+464b3c/919191 comments
+f92672 strings

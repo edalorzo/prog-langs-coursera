@@ -1,0 +1,14 @@
+Useful SML Resources
+
+The Definition of Standard ML
+http://www.itu.dk/people/tofte/publ/1990sml/1990sml.html
+
+Reserved Words
+abstype and andalso as case do datatype else 
+eqtype end exception fn fun functor handle if in include infix
+infixr let local nonfix of op open orelse
+raise rec sharing sig signature struct structure then type val with withtype while
+
+
+  
+ 
