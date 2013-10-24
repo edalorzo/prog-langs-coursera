@@ -86,6 +86,16 @@ fun check_pat p =
 	end	
 
 	
-fun match v p = NONE
+fun match(v,p) = 
+	case (p,v) of
+		(Wildcard, _) => SOME []
+	  | (UnitP, Unit) => SOME []
+	  |	(ConstP n, Const m) => if n = m then SOME [] else NONE
+	  | (Variable x, _) => SOME [(x,v)]
+	  | (ConstructorP(n1, cp), Constructor(n2,cv)) => if n1 = n2 then match(cv,cp) else NONE
+	  | (TupleP tp, Tuple tv) => if List.length tp = List.length tv
+	  							 then all_answers match (ListPair.zip(tv,tp))
+	  							 else  NONE
+	  | _ => NONE
 
-
+fun first_match v ps =  SOME (first_answer (fn p => match(v,p)) ps) handle NoAnswer => NONE

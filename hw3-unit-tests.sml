@@ -132,6 +132,7 @@ val tests14 =
 		match (Const 10, Variable "x") = SOME [("x",Const 10)],
 		match (Constructor("Test", Const 35), ConstructorP("Test", Variable "y")) = SOME [("y",Const 35)],
 		match (Constructor("Test", Const 35), ConstructorP("Fail", Variable "y")) = NONE,
+		match (Constructor("Red",Unit), Variable "x") = SOME [("x",Constructor("Red",Unit))],
 		(*Tuples of unequal size should not match*)
 		match (Tuple([Const 1, Const 2]), TupleP([Variable "x", Variable "y", Variable "z"])) = NONE,
 		match (
