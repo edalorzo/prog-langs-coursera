@@ -216,3 +216,6 @@ fun careful_player(cs: card list, obj: int) =
 	in
 		get_moves(cs, [], [])
 	end
+
+
+val r = officiate([], [],42)

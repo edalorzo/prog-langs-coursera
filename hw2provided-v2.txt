@@ -7,6 +7,17 @@ fun same_string(s1 : string, s2 : string) =
     s1 = s2
 
 (* put your solutions for problem 1 here *)
+(* Author: Edwin Dalorzo *)
+
+(* 1a. Return NONE if the string is not in the list, (* Dan Grossman, Coursera PL, HW2 Provided Code *)
+
+(* if you use this function to compare two strings (returns true if the same
+   string), then you avoid several of the functions in problem 1 having
+   polymorphic types that may be confusing *)
+fun same_string(s1 : string, s2 : string) =
+    s1 = s2
+
+(* put your solutions for problem 1 here *)
 
 (* 1a. Return NONE if the string is not in the list, else return SOME lst where lst is identical 
 to the argument list except the string is not in it. *)
@@ -181,8 +192,3 @@ fun careful_player(cards, goal) =
 	in
 	    moves(cards,[])
 	end
-
-val r1 = score([],18)
-val r2 = score_challenge([],18)
-val r3 = officiate([], [Draw,Draw,Draw,Draw,Draw],42)=21
-val r4 = officiate([(Clubs,Ace),(Hearts,Num(8))],[Draw,Draw,Discard((Clubs,Ace)),Discard(Hearts,Num(8)),Draw],50)
